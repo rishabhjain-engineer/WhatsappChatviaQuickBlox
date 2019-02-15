@@ -1,6 +1,9 @@
 package com.example.anupama.quickblox;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +11,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.quickblox.auth.QBAuth;
 import com.quickblox.auth.session.BaseService;
@@ -26,6 +31,8 @@ import com.quickblox.core.exception.QBResponseException;
 import com.quickblox.core.request.QBRequestGetBuilder;
 import com.quickblox.users.model.QBUser;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class ChatDialogsActivity extends AppCompatActivity implements ChatDialogsAdapter.RowClicked {
@@ -34,8 +41,8 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
     private RecyclerView.LayoutManager mLayoutManager ;
     private ChatDialogsAdapter mChatDialogsAdapter;
     private FloatingActionButton mFloatingActionButton ;
-    private QBRequestGetBuilder mQBRequestGetBuilder ;
-    private ArrayList<QBChatDialog> mQBChatDialogsList = new ArrayList<>();
+    private MainViewModel mMainViewModel ;
+    private ProgressBar mChatDialogPb ;
 
 
     @Override
@@ -43,80 +50,75 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_dialog);
         initComponent();
-        createChatSession();
+        mMainViewModel.createChatSession();
+        mMainViewModel.asyncResponseMutableLiveData.observe(this, new Observer<AsyncResponse>() {
+            @Override
+            public void onChanged(@Nullable AsyncResponse asyncResponse) {
+                if(asyncResponse!=null)
+                    consumeResponse(asyncResponse);
+            }
+        });
+        mMainViewModel.qbChatDialogLiveData.observe(this, new Observer<ArrayList<QBChatDialog>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<QBChatDialog> qbChatDialogs) {
+                Log.e("Rishabh","qbchat dialog: "+qbChatDialogs.size());
+
+                if(qbChatDialogs!=null && qbChatDialogs.size()>0){
+                    Log.e("Rishabh","-----------------------------");
+                    mChatDialogsAdapter = new ChatDialogsAdapter(mMainViewModel.qbChatDialogLiveData.getValue(),ChatDialogsActivity.this);
+                    mChatRv.setAdapter(mChatDialogsAdapter);
+                }
+
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadChatDialogs();
+        mMainViewModel.loadChatDialogs();
     }
 
     void initComponent(){
+
+        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
         mChatRv = findViewById(R.id.chat_rv);
         mFloatingActionButton = findViewById(R.id.floating_btn);
+        mChatDialogPb = findViewById(R.id.chat_dialog_pb);
 
         mLayoutManager = new LinearLayoutManager(this);
         mChatRv.setLayoutManager(mLayoutManager);
         mChatRv.setHasFixedSize(true);
-        mChatDialogsAdapter = new ChatDialogsAdapter(mQBChatDialogsList,ChatDialogsActivity.this);
-        mChatRv.setAdapter(mChatDialogsAdapter);
+
+        mChatDialogPb.setVisibility(View.VISIBLE);
 
         mFloatingActionButton.setOnClickListener(onClickListener);
     }
 
-    private void createChatSession() {
+    private void consumeResponse(AsyncResponse asyncResponse) {
 
-        //final QBUser qbUser = new QBUser("rishabhandroid", "quickblox");
-        final QBUser qbUser = new QBUser("ayush", "quickblox");
+        switch (asyncResponse.responseStatus){
 
-        QBAuth.createSession(qbUser).performAsync(new QBEntityCallback<QBSession>() {
-            @Override
-            public void onSuccess(QBSession qbSession, Bundle bundle) {
-                qbUser.setId(qbSession.getUserId());
-                try {
-                    qbUser.setPassword(BaseService.getBaseService().getToken());
-                } catch (BaseServiceException e) {
-                    e.printStackTrace();
-                }
-
-                ChatSingleton.getChatInstance(ChatDialogsActivity.this).chatService().login(qbUser, new QBEntityCallback() {
-                    @Override
-                    public void onSuccess(Object o, Bundle bundle) {
-                    }
-
-                    @Override
-                    public void onError(QBResponseException e) {
-                    }
-                });
+            case LOADING:{
+                break;
             }
+            case SUCCESS:{
 
-            @Override
-            public void onError(QBResponseException e) {
+                mChatDialogPb.setVisibility(View.INVISIBLE);
+                break;
             }
-        });
+            case ERROR: {
+                mChatDialogPb.setVisibility(View.INVISIBLE);
+                Toast.makeText(ChatDialogsActivity.this,asyncResponse.error.toString(),Toast.LENGTH_SHORT).show();
+                break;
+            }
+            default: break;
+
+        }
 
     }
 
-    private void loadChatDialogs(){
-
-        mQBRequestGetBuilder = ChatSingleton.getChatInstance(ChatDialogsActivity.this).qbRequestGetBuilder();
-        mQBRequestGetBuilder.setLimit(10);
-
-        QBRestChatService.getChatDialogs(null,mQBRequestGetBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatDialog>>() {
-            @Override
-            public void onSuccess(ArrayList<QBChatDialog> qbChatDialogs, Bundle bundle) {
-                mQBChatDialogsList.addAll(qbChatDialogs);
-                mChatDialogsAdapter.notifyDataSetChanged();
-                // notify adapter
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-            }
-        });
-
-    }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override

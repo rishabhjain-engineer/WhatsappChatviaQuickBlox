@@ -71,7 +71,7 @@ public class ChatListActivity extends AppCompatActivity {
             @Override
             public void onSuccess(ArrayList<QBUser> qbUsers, Bundle bundle) {
                for(QBUser u : qbUsers){
-                   if(!u.getLogin().equalsIgnoreCase(ChatSingleton.getChatInstance(ChatListActivity.this).chatService().getUser().getLogin())){
+                   if(!u.getLogin().equalsIgnoreCase(ChatSingleton.getChatInstance().chatService().getUser().getLogin())){
                        qbUserArrayList.add(u);
                    }
                 }

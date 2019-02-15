@@ -43,7 +43,7 @@ public class ChatMessageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 QBChatMessage qbChatMessage = new QBChatMessage();
                 qbChatMessage.setBody("");
-                qbChatMessage.setSenderId(ChatSingleton.getChatInstance(ChatMessageActivity.this).chatService().getUser().getId());
+                qbChatMessage.setSenderId(ChatSingleton.getChatInstance().chatService().getUser().getId());
                 qbChatMessage.setSaveToHistory(true);
 
                 try {
@@ -61,11 +61,11 @@ public class ChatMessageActivity extends AppCompatActivity {
 
 
 
-        receivedQBChatDialog.initForChat(ChatSingleton.getChatInstance(this).chatService());
-        ChatSingleton.getChatInstance(this).chatService().setUseStreamManagement(true);
+        receivedQBChatDialog.initForChat(ChatSingleton.getChatInstance().chatService());
+        ChatSingleton.getChatInstance().chatService().setUseStreamManagement(true);
 
             QBIncomingMessagesManager incomingMessagesManager =
-                    ChatSingleton.getChatInstance(this).chatService().getIncomingMessagesManager() ;
+                    ChatSingleton.getChatInstance().chatService().getIncomingMessagesManager() ;
 
             incomingMessagesManager.addDialogMessageListener(new QBChatDialogMessageListener() {
                 @Override
