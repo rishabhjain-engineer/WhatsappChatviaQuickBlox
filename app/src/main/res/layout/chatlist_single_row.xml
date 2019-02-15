@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <ImageView
+            android:id="@+id/contact_profile"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentStart="true"
+            android:src="@mipmap/ic_launcher"/>
+
+        <TextView
+            android:id="@+id/contact_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ABCD"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_toRightOf="@+id/contact_profile"
+            android:textAppearance="?android:textAppearanceLarge"/>
+
+        <CheckBox
+            android:id="@+id/contact_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_alignParentEnd="true"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="#e5e5e5"/>
+
+</LinearLayout>
