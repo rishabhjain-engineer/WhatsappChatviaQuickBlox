@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initComponent();
         ChatSingleton.getChatInstance();
-        mMainViewModel.asyncResponseMutableLiveData.observe(this, new Observer<AsyncResponse>() {
+        mMainViewModel.getResponse().observe(this, new Observer<AsyncResponse>() {
             @Override
             public void onChanged(@Nullable AsyncResponse asyncResponse) {
                 if(asyncResponse != null){

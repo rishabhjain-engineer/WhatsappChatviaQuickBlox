@@ -33,13 +33,8 @@ import java.util.ArrayList;
 
 public class MainViewModel extends ViewModel {
 
-    public MutableLiveData<AsyncResponse> asyncResponseMutableLiveData = new MutableLiveData<>();
-    public MutableLiveData<ArrayList<QBChatDialog>> qbChatDialogLiveData = new MutableLiveData<>();
+    private MutableLiveData<AsyncResponse> asyncResponseMutableLiveData = new MutableLiveData<>();
 
-    private QBRequestGetBuilder mQBRequestGetBuilder ;
-
-    public MainViewModel() {
-    }
 
     public void signInToChat(String username ,String password){
         final QBUser user = new QBUser(username, password);
@@ -61,61 +56,10 @@ public class MainViewModel extends ViewModel {
 
     }
 
-    public void createChatSession() {
 
-        final QBUser qbUser = new QBUser("rishabhandroid", "quickblox");
-        //final QBUser qbUser = new QBUser("ayush", "quickblox");
-
-        QBAuth.createSession(qbUser).performAsync(new QBEntityCallback<QBSession>() {
-            @Override
-            public void onSuccess(QBSession qbSession, Bundle bundle) {
-                qbUser.setId(qbSession.getUserId());
-                try {
-                    qbUser.setPassword(BaseService.getBaseService().getToken());
-                } catch (BaseServiceException e) {
-                    e.printStackTrace();
-                }
-
-                ChatSingleton.getChatInstance().chatService().login(qbUser, new QBEntityCallback() {
-                    @Override
-                    public void onSuccess(Object o, Bundle bundle) {
-                        //asyncResponseMutableLiveData.setValue(AsyncResponse.success(null));
-                    }
-
-                    @Override
-                    public void onError(QBResponseException e) {
-                        asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
-                    }
-                });
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-                asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
-            }
-        });
-
+    public MutableLiveData<AsyncResponse> getResponse(){
+        return asyncResponseMutableLiveData ;
     }
 
-    public void loadChatDialogs(){
-
-        mQBRequestGetBuilder = ChatSingleton.getChatInstance().qbRequestGetBuilder();
-        mQBRequestGetBuilder.setLimit(10);
-
-        QBRestChatService.getChatDialogs(null,mQBRequestGetBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatDialog>>() {
-            @Override
-            public void onSuccess(ArrayList<QBChatDialog> qbChatDialogs, Bundle bundle) {
-                // notify adapter
-                asyncResponseMutableLiveData.setValue(AsyncResponse.success(null));
-                qbChatDialogLiveData.setValue(qbChatDialogs);
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-                asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
-            }
-        });
-
-    }
 
 }

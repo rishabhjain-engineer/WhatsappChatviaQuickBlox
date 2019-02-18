@@ -1,5 +1,9 @@
 package com.example.anupama.quickblox;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,7 +30,7 @@ public class ChatListActivity extends AppCompatActivity {
     private Button mCreateChatDialogBtn ;
     private LinearLayoutManager mLinearLayoutManager;
     private ChatListAdapter mChatListAdapter ;
-    private ArrayList<QBUser> qbUserArrayList = new ArrayList<>();
+    private ChatListViewModel mChatListViewModel;
     private ProgressBar mProgressBar ;
 
     @Override
@@ -34,11 +38,34 @@ public class ChatListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_list);
         initComponent();
-        retrieveAllUser();
+
+        mChatListViewModel.retrieveAllUser();
+        mChatListViewModel.getQbUserListLiveData().observe(this, new Observer<ArrayList<QBUser>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<QBUser> qbUsers) {
+                if(mChatListAdapter == null){
+                    mChatListAdapter = new ChatListAdapter(qbUsers);
+                    mContactRv.setAdapter(mChatListAdapter);
+                }else {
+                    mChatListAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        mChatListViewModel.getAsyncResponseMutableLiveData().observe(this, new Observer<AsyncResponse>() {
+            @Override
+            public void onChanged(@Nullable AsyncResponse asyncResponse) {
+                consumeResponse(asyncResponse);
+            }
+        });
+
+
     }
 
     private void initComponent(){
 
+
+        mChatListViewModel = ViewModelProviders.of(this).get(ChatListViewModel.class);
         mContactRv = findViewById(R.id.contact_list);
         mProgressBar = findViewById(R.id.contact_pb);
         mCreateChatDialogBtn = findViewById(R.id.create_dialog_btn);
@@ -47,8 +74,9 @@ public class ChatListActivity extends AppCompatActivity {
         mLinearLayoutManager = new LinearLayoutManager(this);
         mContactRv.setLayoutManager(mLinearLayoutManager);
         mContactRv.setHasFixedSize(true);
-        mChatListAdapter = new ChatListAdapter(qbUserArrayList);
-        mContactRv.setAdapter(mChatListAdapter);
+
+
+
 
         mCreateChatDialogBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,56 +86,41 @@ public class ChatListActivity extends AppCompatActivity {
                 if(value==0){
                     Toast.makeText(ChatListActivity.this,"Select atleast 1 user, to create chat dialog.",Toast.LENGTH_SHORT).show();
                 }else if(value==1){
-                    createPrivateChat();
+                    mChatListViewModel.createPrivateChat(mChatListAdapter.getCheckeduserList().get(0));
                 }else {
-                    createGroupChat();
+                    mChatListViewModel.createGroupChat();
                 }
             }
         });
     }
 
-    private void retrieveAllUser(){
-        QBUsers.getUsers(null).performAsync(new QBEntityCallback<ArrayList<QBUser>>() {
-            @Override
-            public void onSuccess(ArrayList<QBUser> qbUsers, Bundle bundle) {
-               for(QBUser u : qbUsers){
-                   if(!u.getLogin().equalsIgnoreCase(ChatSingleton.getChatInstance().chatService().getUser().getLogin())){
-                       qbUserArrayList.add(u);
-                   }
-                }
 
-                mChatListAdapter.notifyDataSetChanged();
+    private void consumeResponse(AsyncResponse asyncResponse) {
+
+        switch (asyncResponse.responseStatus){
+
+            case LOADING:{
+                break;
+            }
+            case SUCCESS:{
                 mProgressBar.setVisibility(View.INVISIBLE);
+                if(asyncResponse.data.getAsBoolean()){
+                    Toast.makeText(ChatListActivity.this,"Private dialog created",Toast.LENGTH_SHORT).show();
+                    finish();
+                }else {
+                    Toast.makeText(ChatListActivity.this,"All contacts are loaded.",Toast.LENGTH_SHORT).show();
+                }
 
+                break;
             }
-
-            @Override
-            public void onError(QBResponseException e) {
-                Log.e("Rishabh","\n\n User QBResponseException: "+e.toString());
+            case ERROR: {
+                mProgressBar.setVisibility(View.INVISIBLE);
+                Toast.makeText(ChatListActivity.this,asyncResponse.error.toString(),Toast.LENGTH_SHORT).show();
+                break;
             }
-        });
+            default: break;
 
-    }
-
-    private void createPrivateChat(){
-
-        QBUser qbUser = mChatListAdapter.getCheckeduserList().get(0);
-        QBChatDialog dialog = DialogUtils.buildPrivateDialog(mChatListAdapter.getCheckeduserList().get(0).getId());
-        QBRestChatService.createChatDialog(dialog).performAsync(new QBEntityCallback<QBChatDialog>() {
-            @Override
-            public void onSuccess(QBChatDialog qbChatDialog, Bundle bundle) {
-                Toast.makeText(ChatListActivity.this,"Dialog created successfully.",Toast.LENGTH_SHORT).show();
-                finish();
-            }
-
-            @Override
-            public void onError(QBResponseException e) {
-                Log.e("Rishabh","Dialog error. "+e.toString());
-            }
-        });
-    }
-
-    private void createGroupChat(){
+        }
 
     }
 

@@ -41,8 +41,9 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
     private RecyclerView.LayoutManager mLayoutManager ;
     private ChatDialogsAdapter mChatDialogsAdapter;
     private FloatingActionButton mFloatingActionButton ;
-    private MainViewModel mMainViewModel ;
+    private ChatDialogViewModel mChatDialogViewModel ;
     private ProgressBar mChatDialogPb ;
+    private ArrayList<QBChatDialog> mQBChatDialogList = new ArrayList<>();
 
 
     @Override
@@ -50,50 +51,45 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_dialog);
         initComponent();
-        mMainViewModel.createChatSession();
-        mMainViewModel.asyncResponseMutableLiveData.observe(this, new Observer<AsyncResponse>() {
+
+        mChatDialogViewModel.createChatSession();
+        mChatDialogViewModel.loadChatDialogs();
+
+        mChatDialogViewModel.getResponse().observe(this, new Observer<AsyncResponse>() {
             @Override
             public void onChanged(@Nullable AsyncResponse asyncResponse) {
                 if(asyncResponse!=null)
                     consumeResponse(asyncResponse);
             }
         });
-        mMainViewModel.qbChatDialogLiveData.observe(this, new Observer<ArrayList<QBChatDialog>>() {
-            @Override
-            public void onChanged(@Nullable ArrayList<QBChatDialog> qbChatDialogs) {
-                Log.e("Rishabh","qbchat dialog: "+qbChatDialogs.size());
 
-                if(qbChatDialogs!=null && qbChatDialogs.size()>0){
-                    Log.e("Rishabh","-----------------------------");
-                    mChatDialogsAdapter = new ChatDialogsAdapter(mMainViewModel.qbChatDialogLiveData.getValue(),ChatDialogsActivity.this);
-                    mChatRv.setAdapter(mChatDialogsAdapter);
-                }
 
-            }
-        });
+     mChatDialogViewModel.getPersistentChatDialogs().getList().observe(this, new Observer<ArrayList<QBChatDialog>>() {
+         @Override
+         public void onChanged(@Nullable ArrayList<QBChatDialog> qbChatDialogs) {
+             Log.e("Rishabh","on change called: chat Dialog size: "+qbChatDialogs.size());
+             mQBChatDialogList.clear();
+             mQBChatDialogList.addAll(qbChatDialogs);
+             mChatDialogsAdapter.notifyDataSetChanged();
+         }
+     });
+
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mMainViewModel.loadChatDialogs();
-    }
 
     void initComponent(){
 
-        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-
+        mChatDialogViewModel = ViewModelProviders.of(this).get(ChatDialogViewModel.class);
         mChatRv = findViewById(R.id.chat_rv);
         mFloatingActionButton = findViewById(R.id.floating_btn);
         mChatDialogPb = findViewById(R.id.chat_dialog_pb);
-
         mLayoutManager = new LinearLayoutManager(this);
         mChatRv.setLayoutManager(mLayoutManager);
         mChatRv.setHasFixedSize(true);
-
         mChatDialogPb.setVisibility(View.VISIBLE);
-
         mFloatingActionButton.setOnClickListener(onClickListener);
+        mChatDialogsAdapter = new ChatDialogsAdapter(mQBChatDialogList,ChatDialogsActivity.this);
+        mChatRv.setAdapter(mChatDialogsAdapter);
     }
 
     private void consumeResponse(AsyncResponse asyncResponse) {
@@ -104,7 +100,7 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
                 break;
             }
             case SUCCESS:{
-
+                Toast.makeText(ChatDialogsActivity.this,"Chat dialogs loaded.",Toast.LENGTH_SHORT).show();
                 mChatDialogPb.setVisibility(View.INVISIBLE);
                 break;
             }
