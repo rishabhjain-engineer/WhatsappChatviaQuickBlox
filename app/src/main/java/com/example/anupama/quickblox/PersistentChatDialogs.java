@@ -9,11 +9,13 @@ import java.util.ArrayList;
 
 public class PersistentChatDialogs {
 
-    private MutableLiveData<ArrayList<QBChatDialog>> livedata = new MutableLiveData<>();
-    private ArrayList<QBChatDialog> list = new ArrayList<>();
+    private MutableLiveData<ArrayList<QBChatDialog>> livedata;
+    private ArrayList<QBChatDialog> list;
     private static PersistentChatDialogs INSTANCE ;
 
     private PersistentChatDialogs(){
+        livedata = new MutableLiveData<>();
+        list = new ArrayList<>();
     }
 
     public static synchronized PersistentChatDialogs getInstance(){
@@ -36,5 +38,10 @@ public class PersistentChatDialogs {
 
     public MutableLiveData<ArrayList<QBChatDialog>> getList(){
         return livedata;
+    }
+
+    public void clearDataset(){
+        list.clear();
+        livedata.postValue(null);
     }
 }

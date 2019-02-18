@@ -1,11 +1,8 @@
 package com.example.anupama.quickblox;
 
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.quickblox.auth.QBAuth;
 import com.quickblox.auth.session.BaseService;
@@ -23,11 +20,11 @@ import java.util.ArrayList;
 public class ChatDialogViewModel extends ViewModel {
 
     private MutableLiveData<AsyncResponse> asyncResponseMutableLiveData = new MutableLiveData<>();
-    private QBRequestGetBuilder mQBRequestGetBuilder ;
+    private QBRequestGetBuilder mQBRequestGetBuilder;
     private PersistentChatDialogs persistentChatDialogs;
 
 
-    public ChatDialogViewModel(){
+    public ChatDialogViewModel() {
         persistentChatDialogs = PersistentChatDialogs.getInstance();
 
     }
@@ -68,12 +65,12 @@ public class ChatDialogViewModel extends ViewModel {
 
     }
 
-    public void loadChatDialogs(){
+    public void loadChatDialogs() {
 
         mQBRequestGetBuilder = ChatSingleton.getChatInstance().qbRequestGetBuilder();
         mQBRequestGetBuilder.setLimit(10);
 
-        QBRestChatService.getChatDialogs(null,mQBRequestGetBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatDialog>>() {
+        QBRestChatService.getChatDialogs(null, mQBRequestGetBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatDialog>>() {
             @Override
             public void onSuccess(ArrayList<QBChatDialog> qbChatDialogs, Bundle bundle) {
                 asyncResponseMutableLiveData.setValue(AsyncResponse.success(null));
@@ -88,11 +85,16 @@ public class ChatDialogViewModel extends ViewModel {
 
     }
 
-    public MutableLiveData<AsyncResponse> getResponse(){
-        return asyncResponseMutableLiveData ;
+    public MutableLiveData<AsyncResponse> getResponse() {
+        return asyncResponseMutableLiveData;
     }
 
-   public PersistentChatDialogs getPersistentChatDialogs(){
-       return persistentChatDialogs;
-   }
+    public PersistentChatDialogs getPersistentChatDialogs() {
+        return persistentChatDialogs;
+    }
+
+    public void clearOff() {
+        persistentChatDialogs.clearDataset();
+        persistentChatDialogs = null;
+    }
 }

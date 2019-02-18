@@ -100,10 +100,10 @@ public class ChatListActivity extends AppCompatActivity {
         switch (asyncResponse.responseStatus){
 
             case LOADING:{
+                mProgressBar.setVisibility(View.VISIBLE);
                 break;
             }
             case SUCCESS:{
-                mProgressBar.setVisibility(View.INVISIBLE);
                 if(asyncResponse.data.getAsBoolean()){
                     Toast.makeText(ChatListActivity.this,"Private dialog created",Toast.LENGTH_SHORT).show();
                     finish();
@@ -111,6 +111,7 @@ public class ChatListActivity extends AppCompatActivity {
                     Toast.makeText(ChatListActivity.this,"All contacts are loaded.",Toast.LENGTH_SHORT).show();
                 }
 
+                mProgressBar.setVisibility(View.INVISIBLE);
                 break;
             }
             case ERROR: {

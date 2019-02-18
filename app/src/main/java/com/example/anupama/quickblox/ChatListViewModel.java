@@ -35,6 +35,7 @@ public class ChatListViewModel extends ViewModel {
         QBUsers.getUsers(null).performAsync(new QBEntityCallback<ArrayList<QBUser>>() {
             @Override
             public void onSuccess(ArrayList<QBUser> qbUsers, Bundle bundle) {
+
                 for(QBUser u : qbUsers){
                     if(!u.getLogin().equalsIgnoreCase(ChatSingleton.getChatInstance().chatService().getUser().getLogin())){
                         qbUserArrayList.add(u);
@@ -56,6 +57,7 @@ public class ChatListViewModel extends ViewModel {
 
     public void createPrivateChat(QBUser qbUser){
 
+        asyncResponseMutableLiveData.setValue(AsyncResponse.loading());
         QBChatDialog dialog = DialogUtils.buildPrivateDialog(qbUser.getId());
         QBRestChatService.createChatDialog(dialog).performAsync(new QBEntityCallback<QBChatDialog>() {
             @Override
