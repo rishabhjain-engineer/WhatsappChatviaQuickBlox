@@ -38,7 +38,6 @@ public class MainViewModel extends ViewModel {
 
     public void signInToChat(String username ,String password){
         final QBUser user = new QBUser(username, password);
-
         QBUsers.signIn(user).performAsync(new QBEntityCallback<QBUser>() {
             @Override
             public void onSuccess(QBUser user, Bundle args) {
@@ -50,6 +49,7 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onError(QBResponseException error) {
                 // error
+                Log.e("Rishabh","sign-in error: "+error.toString());
                 asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(error)));
             }
         });

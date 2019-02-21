@@ -3,7 +3,10 @@ package com.example.anupama.quickblox;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.quickblox.auth.QBAuth;
 import com.quickblox.auth.session.BaseService;
 import com.quickblox.auth.session.QBSession;
@@ -29,10 +32,9 @@ public class ChatDialogViewModel extends ViewModel {
 
     }
 
-    public void createChatSession() {
+    public void createChatSession(String username, String password) {
 
-        final QBUser qbUser = new QBUser("rishabhandroid", "quickblox");
-        //final QBUser qbUser = new QBUser("ayush", "quickblox");
+        final QBUser qbUser = new QBUser(username, password);
 
         QBAuth.createSession(qbUser).performAsync(new QBEntityCallback<QBSession>() {
             @Override
@@ -47,19 +49,22 @@ public class ChatDialogViewModel extends ViewModel {
                 ChatSingleton.getChatInstance().chatService().login(qbUser, new QBEntityCallback() {
                     @Override
                     public void onSuccess(Object o, Bundle bundle) {
-                        //asyncResponseMutableLiveData.setValue(AsyncResponse.success(null));
+                        Log.e("Rishabh","Login success ");
+                        JsonElement element = new JsonPrimitive(true);
+                        asyncResponseMutableLiveData.postValue(AsyncResponse.success(element));
                     }
 
                     @Override
                     public void onError(QBResponseException e) {
-                        asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
+                        Log.e("Rishabh","Login error: "+e.toString());
+                        asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(e)));
                     }
                 });
             }
 
             @Override
             public void onError(QBResponseException e) {
-                asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
+                asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(e)));
             }
         });
 
@@ -73,13 +78,16 @@ public class ChatDialogViewModel extends ViewModel {
         QBRestChatService.getChatDialogs(null, mQBRequestGetBuilder).performAsync(new QBEntityCallback<ArrayList<QBChatDialog>>() {
             @Override
             public void onSuccess(ArrayList<QBChatDialog> qbChatDialogs, Bundle bundle) {
-                asyncResponseMutableLiveData.setValue(AsyncResponse.success(null));
+                Log.e("Rishabh","Load chat dialog success: ");
+                JsonElement element = new JsonPrimitive(false);
                 persistentChatDialogs.setChatDialogsList(qbChatDialogs);
+                asyncResponseMutableLiveData.postValue(AsyncResponse.success(element));
             }
 
             @Override
             public void onError(QBResponseException e) {
-                asyncResponseMutableLiveData.setValue(AsyncResponse.error(new Throwable(e)));
+                Log.e("Rishabh","Load chat dialog error: "+e.toString());
+                asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(e)));
             }
         });
 

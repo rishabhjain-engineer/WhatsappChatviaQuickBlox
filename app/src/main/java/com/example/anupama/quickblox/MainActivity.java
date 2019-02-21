@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
             case SUCCESS:{
                 mProgressBar.setVisibility(View.INVISIBLE);
                 Intent intent = new Intent(MainActivity.this,ChatDialogsActivity.class);
+                intent.putExtra("username",mUsernameET.getEditableText().toString());
+                intent.putExtra("password",mPasswordET.getEditableText().toString());
                 startActivity(intent);
                 finish();
                 break;

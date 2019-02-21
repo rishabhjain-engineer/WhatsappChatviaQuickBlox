@@ -2,6 +2,7 @@ package com.example.anupama.quickblox;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 public class AppApplication extends Application {
 

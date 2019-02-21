@@ -27,6 +27,7 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
     private ChatDialogViewModel mChatDialogViewModel;
     private ProgressBar mChatDialogPb;
     private ArrayList<QBChatDialog> mQBChatDialogList = new ArrayList<>();
+    private String receivedUsername, receivedPassword ;
 
 
     @Override
@@ -35,8 +36,13 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
         setContentView(R.layout.activity_chat_dialog);
         initComponent();
 
-        mChatDialogViewModel.createChatSession();
-        mChatDialogViewModel.loadChatDialogs();
+        if(getIntent() != null){
+            receivedUsername = getIntent().getStringExtra("username");
+            receivedPassword = getIntent().getStringExtra("password");
+            mChatDialogViewModel.createChatSession(receivedUsername,receivedPassword);
+        }
+
+
 
         mChatDialogViewModel.getResponse().observe(this, new Observer<AsyncResponse>() {
             @Override
@@ -51,7 +57,6 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
             @Override
             public void onChanged(@Nullable ArrayList<QBChatDialog> qbChatDialogs) {
                 if (qbChatDialogs != null) {
-                    Log.e("Rishabh", "on change called: chat Dialog size: " + qbChatDialogs.size());
                     mQBChatDialogList.clear();
                     mQBChatDialogList.addAll(qbChatDialogs);
                     mChatDialogsAdapter.notifyDataSetChanged();
@@ -86,8 +91,12 @@ public class ChatDialogsActivity extends AppCompatActivity implements ChatDialog
                 break;
             }
             case SUCCESS: {
-                Toast.makeText(ChatDialogsActivity.this, "Chat dialogs loaded.", Toast.LENGTH_SHORT).show();
-                mChatDialogPb.setVisibility(View.INVISIBLE);
+                if(asyncResponse.data.getAsBoolean()){
+                    mChatDialogViewModel.loadChatDialogs();
+                }else {
+                    Toast.makeText(ChatDialogsActivity.this, "Chat dialogs loaded.", Toast.LENGTH_SHORT).show();
+                    mChatDialogPb.setVisibility(View.INVISIBLE);
+                }
                 break;
             }
             case ERROR: {

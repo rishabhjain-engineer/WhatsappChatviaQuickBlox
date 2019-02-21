@@ -49,6 +49,7 @@ public class ChatListViewModel extends ViewModel {
 
             @Override
             public void onError(QBResponseException e) {
+                Log.e("Rishabh","retrieve all user error: "+e.toString());
                 asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(e)));
             }
         });
@@ -57,7 +58,7 @@ public class ChatListViewModel extends ViewModel {
 
     public void createPrivateChat(QBUser qbUser){
 
-        asyncResponseMutableLiveData.setValue(AsyncResponse.loading());
+        asyncResponseMutableLiveData.postValue(AsyncResponse.loading());
         QBChatDialog dialog = DialogUtils.buildPrivateDialog(qbUser.getId());
         QBRestChatService.createChatDialog(dialog).performAsync(new QBEntityCallback<QBChatDialog>() {
             @Override
@@ -69,6 +70,7 @@ public class ChatListViewModel extends ViewModel {
 
             @Override
             public void onError(QBResponseException e) {
+                Log.e("Rishabh","create pvt chat error: "+e.toString());
                 asyncResponseMutableLiveData.postValue(AsyncResponse.error(new Throwable(e)));
             }
         });
