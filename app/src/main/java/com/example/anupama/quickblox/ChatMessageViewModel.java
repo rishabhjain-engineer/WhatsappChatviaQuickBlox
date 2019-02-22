@@ -4,6 +4,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -40,8 +41,7 @@ public class ChatMessageViewModel extends ViewModel{
         incomingMessagesManager.addDialogMessageListener(new QBChatDialogMessageListener() {
             @Override
             public void processMessage(String s, QBChatMessage qbChatMessage, Integer integer) {
-                Log.e("Rishabh","incoming chat message: "+qbChatMessage.getBody());
-                Log.e("Rishabh","incoming chat string: "+s);
+                persistentChatMessages.addToList(qbChatMessage);
             }
 
             @Override

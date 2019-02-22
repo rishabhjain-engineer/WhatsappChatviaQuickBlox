@@ -54,7 +54,6 @@ public class ChatMessageActivity extends AppCompatActivity {
         mChatMessageViewModel.getChatMessageInstance().getLivedata().observe(this, new Observer<ArrayList<QBChatMessage>>() {
             @Override
             public void onChanged(@Nullable ArrayList<QBChatMessage> qbChatMessages) {
-
                 if(mChatMessageAdapter == null){
                     mChatMessageAdapter = new ChatMessageAdapter(qbChatMessages,
                             mLoggedInUserId,
@@ -83,6 +82,9 @@ public class ChatMessageActivity extends AppCompatActivity {
 
                 try {
                     receivedQBChatDialog.sendMessage(qbChatMessage);
+                    mChatMessageViewModel.getChatMessageInstance().addToList(qbChatMessage);
+                    mMessageEt.setText("");
+                    Toast.makeText(ChatMessageActivity.this,qbChatMessage.getBody(),Toast.LENGTH_LONG).show();
                 } catch (SmackException.NotConnectedException e) {
                     Log.e("Rishabh","send message error: "+e.toString());
                     e.printStackTrace();
